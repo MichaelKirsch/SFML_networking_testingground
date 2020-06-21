@@ -15,13 +15,6 @@ void DoStuff(void)
     static std::string oldMsg;
     while(!quit)
     {
-        sf::Packet packetSend;
-        globalMutex.lock();
-        packetSend << msgSend;
-        globalMutex.unlock();
-
-        l_socket.send(packetSend);
-
         std::string msg;
         sf::Packet packetReceive;
 
@@ -42,25 +35,13 @@ void Server(void)
     std::cout << "New client connected: " << l_socket.getRemoteAddress() << std::endl;
 }
 
-bool Client(void)
-{
-    if(l_socket.connect(IPADDRESS, PORT) == sf::Socket::Done)
-    {
-        std::cout << "Connected\n";
-        return true;
-    }
-    return false;
-}
 
 void GetInput(void)
 {
     std::string s;
-    std::cout << "\nEnter \"exit\" to quit or message to send: ";
-    getline(std::cin,s);
     if(s == "exit")
         quit = true;
     globalMutex.lock();
-    msgSend = s;
     globalMutex.unlock();
 }
 
@@ -69,14 +50,7 @@ int main(int argc, char* argv[])
 {
     sf::Thread* thread = 0;
 
-    char who;
-    std::cout << "Do you want to be a server (s) or a client (c) ? ";
-    std::cin  >> who;
-
-    if (who == 's')
-        Server();
-    else
-        Client();
+    Server();
 
     thread = new sf::Thread(&DoStuff);
     thread->launch();
